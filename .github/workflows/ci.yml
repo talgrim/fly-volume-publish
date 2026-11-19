@@ -16,4 +16,4 @@ jobs:
       - name: ShellCheck
         run: shellcheck scripts/*.sh
       - name: Test remote-publish.sh (alpine/busybox)
-        run: ./scripts/test-remote-publish.sh
+        run: bash ./scripts/test-remote-publish.sh

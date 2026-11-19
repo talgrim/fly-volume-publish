@@ -65,5 +65,5 @@ runs:
         INPUT_VERSION: ${{ inputs.version }}
         INPUT_SUFFIX: ${{ inputs.suffix }}
       run: |
-        "$GITHUB_ACTION_PATH/scripts/publish.sh" \
+        bash "$GITHUB_ACTION_PATH/scripts/publish.sh" \
           "$INPUT_FILE" "$INPUT_PRODUCT" "$INPUT_VERSION" "$INPUT_SUFFIX"
