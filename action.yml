@@ -1,0 +1,69 @@
+name: Publish to a Fly volume
+description: >
+  Upload a versioned build to a Fly.io volume that nginx serves: atomic rename, checksum, a
+  <product>-latest symlink, pruning of old versions and a manifest.json index.
+author: talgrim
+
+inputs:
+  file:
+    description: Path of the file to publish (apk, zip, ...).
+    required: true
+  product:
+    description: Lowercase product id (letters, digits, dashes), e.g. myapp or myapp-host.
+    required: true
+  version:
+    description: Version as x.y.z, without a leading v.
+    required: true
+  suffix:
+    description: Everything after the version, with the leading dot or dash, e.g. .apk or -win-x64.zip.
+    required: true
+  fly-app:
+    description: Name of the Fly app that owns the volume.
+    required: true
+  base-url:
+    description: Public base URL of that app, e.g. https://files.example.com (used to wake the machine and to verify).
+    required: true
+  fly-api-token:
+    description: Token from `fly tokens create ssh -a <app>`. Keep it as a repository secret.
+    required: true
+  files-dir:
+    description: Where the volume is mounted on the machine.
+    required: false
+    default: /srv/files
+  url-path:
+    description: URL path under which nginx serves files-dir.
+    required: false
+    default: /files
+  health-path:
+    description: Path that always answers 200, used to wake a stopped machine.
+    required: false
+    default: /health
+  keep:
+    description: How many versions of each product to keep.
+    required: false
+    default: "3"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up flyctl
+      uses: superfly/flyctl-actions/setup-flyctl@1.5
+
+    - name: Publish
+      shell: bash
+      # Inputs go through env, never straight into the script text.
+      env:
+        FLY_API_TOKEN: ${{ inputs.fly-api-token }}
+        FLY_APP: ${{ inputs.fly-app }}
+        PUBLISH_URL: ${{ inputs.base-url }}
+        FILES_DIR: ${{ inputs.files-dir }}
+        URL_PATH: ${{ inputs.url-path }}
+        HEALTH_PATH: ${{ inputs.health-path }}
+        KEEP: ${{ inputs.keep }}
+        INPUT_FILE: ${{ inputs.file }}
+        INPUT_PRODUCT: ${{ inputs.product }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_SUFFIX: ${{ inputs.suffix }}
+      run: |
+        bash "$GITHUB_ACTION_PATH/scripts/publish.sh" \
+          "$INPUT_FILE" "$INPUT_PRODUCT" "$INPUT_VERSION" "$INPUT_SUFFIX"
