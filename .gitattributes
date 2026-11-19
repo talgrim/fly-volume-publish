@@ -1,0 +1,2 @@
+# Shell scripts run on Linux (CI runners and the Fly machine): never convert them to CRLF.
+*.sh text eol=lf
